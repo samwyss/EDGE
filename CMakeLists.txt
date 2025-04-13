@@ -56,6 +56,15 @@ else ()
     message(STATUS "Library `{fmt}` found on system.")
 endif ()
 
+find_package(PkgConfig)
+
+if (PKG_CONFIG_FOUND)
+    pkg_check_modules(PETSC PETSc)
+    pkg_check_modules(LIBMESH libmesh)
+else ()
+    message(FATAL_ERROR "pkg-config is not found on this system. Please correct and reconfigure.")
+endif()
+
 # testing --------------------------------------------------------------------------------------------------------------
 enable_testing()
 add_subdirectory(tests)
@@ -73,6 +82,8 @@ target_include_directories(${PROJECT_NAME}
         PRIVATE ${OPENMP_CXX_INCLUDE_PATH}
         PRIVATE ${HDF5_INCLUDE_DIRS}
         PRIVATE ${PROJECT_BINARY_DIR}
+        PRIVATE ${PETSC_INCLUDE_DIRS}
+        PRIVATE ${LIBMESH_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
