@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# EDGE setup -----------------------------------------------------------------------------------------------------------
 project(EDGE
         VERSION 0.0.1
         LANGUAGES CXX
@@ -10,10 +11,12 @@ project(EDGE
 )
 
 # compiler settings ----------------------------------------------------------------------------------------------------
+# compiler diagnostics
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
 message(STATUS "CMake Build Type: ${CMAKE_BUILD_TYPE}")
 
+# set compiler flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_compile_options(-O0 -Wall -g3)
@@ -27,20 +30,28 @@ else ()
 endif ()
 
 # dependencies ---------------------------------------------------------------------------------------------------------
+# FetchContent for installing CMake managed projects in git repositories
 include(FetchContent)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 set(FETCHCONTENT_QUIET OFF)
 
+# PkgConfig for finding installed software on this system which CMake does not have native integrations for
+find_package(PkgConfig)
+
+# MPI for distributed memory parallelism
 find_package(MPI REQUIRED COMPONENTS CXX)
 
+# OpenMP for portable SIMD intrinsics
 find_package(OpenMP REQUIRED COMPONENTS CXX)
 
+# parallel HDF5 for parallel IO
 set(HDF5_PREFER_PARALLEL TRUE)
 find_package(HDF5 REQUIRED)
 if (NOT HDF5_IS_PARALLEL)
     message(FATAL_ERROR "Found HDF5 ${HDF5_VERSION} is not parallel. Please correct and reconfigure.")
 endif ()
 
+# libfmt for formatting terminal output
 find_package(fmt QUIET)
 if (NOT fmt_FOUND)
     message(STATUS "Library `{fmt}` not found. Installing locally now.")
@@ -56,11 +67,13 @@ else ()
     message(STATUS "Library `{fmt}` found on system.")
 endif ()
 
-find_package(PkgConfig)
-
+# check for installed software modules on the system which do not use CMake
 if (PKG_CONFIG_FOUND)
-    pkg_check_modules(PETSC PETSc)
-    pkg_check_modules(LIBMESH libmesh)
+    # PETSc for solving PDEs
+    pkg_check_modules(PETSC PETSc REQUIRED)
+
+    # libmesh for FEM functionality
+    pkg_check_modules(LIBMESH libmesh REQUIRED)
 else ()
     message(FATAL_ERROR "pkg-config is not found on this system. Please correct and reconfigure.")
 endif()
@@ -69,14 +82,17 @@ endif()
 enable_testing()
 add_subdirectory(tests)
 
-# EDGE setup -----------------------------------------------------------------------------------------------------------
+# compiling -----------------------------------------------------------------------------------------------------------
+# main build target
 add_executable(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}/src/main.cpp
 )
 
+# diagnostics for compiler/linker flags
 get_target_property(EDGE_COMPILE_OPTIONS ${PROJECT_NAME} COMPILE_OPTIONS)
 message(STATUS "C/C++ Compile Options: ${MPIMANAGER_COMPILE_OPTIONS}")
 
+# includes for main build target
 target_include_directories(${PROJECT_NAME}
         PRIVATE ${MPI_CXX_INCLUDE_PATH}
         PRIVATE ${OPENMP_CXX_INCLUDE_PATH}
@@ -86,6 +102,7 @@ target_include_directories(${PROJECT_NAME}
         PRIVATE ${LIBMESH_INCLUDE_DIRS}
 )
 
+# linking for main build target
 target_link_libraries(${PROJECT_NAME}
         PRIVATE MPI::MPI_CXX
         PRIVATE OpenMP::OpenMP_CXX
