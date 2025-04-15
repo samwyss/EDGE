@@ -82,7 +82,7 @@ endif()
 enable_testing()
 add_subdirectory(tests)
 
-# compiling -----------------------------------------------------------------------------------------------------------
+# compiling and linking ------------------------------------------------------------------------------------------------
 # main build target
 add_executable(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}/src/main.cpp
