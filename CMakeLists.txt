@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # EDGE setup -----------------------------------------------------------------------------------------------------------
-project(EDGE
+project(EDGEDRIVER
         VERSION 0.0.1
         LANGUAGES CXX
         HOMEPAGE_URL https://github.com/samwyss/EDGE
@@ -92,14 +92,18 @@ add_executable(${PROJECT_NAME}
 get_target_property(EDGE_COMPILE_OPTIONS ${PROJECT_NAME} COMPILE_OPTIONS)
 message(STATUS "C/C++ Compile Options: ${MPIMANAGER_COMPILE_OPTIONS}")
 
-# includes for main build target
-target_include_directories(${PROJECT_NAME}
-        PRIVATE ${MPI_CXX_INCLUDE_PATH}
-        PRIVATE ${OPENMP_CXX_INCLUDE_PATH}
-        PRIVATE ${HDF5_INCLUDE_DIRS}
-        PRIVATE ${PROJECT_BINARY_DIR}
-        PRIVATE ${PETSC_INCLUDE_DIRS}
-        PRIVATE ${LIBMESH_INCLUDE_DIRS}
+# define EDGE library
+add_library(EDGE
+        src/engine.cpp
+        include/engine.h
+)
+
+# linking for EDGE library
+target_link_libraries(EDGE
+        PRIVATE MPI::MPI_CXX
+        PRIVATE OpenMP::OpenMP_CXX
+        PRIVATE HDF5::HDF5
+        PRIVATE fmt::fmt
 )
 
 # linking for main build target
@@ -108,4 +112,27 @@ target_link_libraries(${PROJECT_NAME}
         PRIVATE OpenMP::OpenMP_CXX
         PRIVATE HDF5::HDF5
         PRIVATE fmt::fmt
+        PRIVATE EDGE
+)
+
+# includes for EDGE library
+target_include_directories(EDGE
+        PRIVATE ${MPI_CXX_INCLUDE_PATH}
+        PRIVATE ${OPENMP_CXX_INCLUDE_PATH}
+        PRIVATE ${HDF5_INCLUDE_DIRS}
+        PRIVATE ${PROJECT_BINARY_DIR}
+        PRIVATE ${PETSC_INCLUDE_DIRS}
+        PRIVATE ${LIBMESH_INCLUDE_DIRS}
+        PRIVATE include
+)
+
+# includes for main build target
+target_include_directories(${PROJECT_NAME}
+        PRIVATE ${MPI_CXX_INCLUDE_PATH}
+        PRIVATE ${OPENMP_CXX_INCLUDE_PATH}
+        PRIVATE ${HDF5_INCLUDE_DIRS}
+        PRIVATE ${PROJECT_BINARY_DIR}
+        PRIVATE ${PETSC_INCLUDE_DIRS}
+        PRIVATE ${LIBMESH_INCLUDE_DIRS}
+        PRIVATE include
 )
