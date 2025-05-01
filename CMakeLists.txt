@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # EDGE setup -----------------------------------------------------------------------------------------------------------
-project(EDGEDRIVER
+project(EDGE
         VERSION 0.0.1
         LANGUAGES CXX
         HOMEPAGE_URL https://github.com/samwyss/EDGE
@@ -93,13 +93,13 @@ get_target_property(EDGE_COMPILE_OPTIONS ${PROJECT_NAME} COMPILE_OPTIONS)
 message(STATUS "C/C++ Compile Options: ${MPIMANAGER_COMPILE_OPTIONS}")
 
 # define EDGE library
-add_library(EDGE
+add_library(CORE
         src/engine.cpp
         include/engine.h
 )
 
 # linking for EDGE library
-target_link_libraries(EDGE
+target_link_libraries(CORE
         PRIVATE MPI::MPI_CXX
         PRIVATE OpenMP::OpenMP_CXX
         PRIVATE HDF5::HDF5
@@ -112,11 +112,11 @@ target_link_libraries(${PROJECT_NAME}
         PRIVATE OpenMP::OpenMP_CXX
         PRIVATE HDF5::HDF5
         PRIVATE fmt::fmt
-        PRIVATE EDGE
+        PRIVATE CORE
 )
 
 # includes for EDGE library
-target_include_directories(EDGE
+target_include_directories(CORE
         PRIVATE ${MPI_CXX_INCLUDE_PATH}
         PRIVATE ${OPENMP_CXX_INCLUDE_PATH}
         PRIVATE ${HDF5_INCLUDE_DIRS}
